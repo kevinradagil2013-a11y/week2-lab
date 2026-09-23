@@ -3,8 +3,6 @@ services:
     image: mongo:8.0
     container_name: week2-mongodb
     restart: unless-stopped
-    ports:
-      - "27017:27017"
     volumes:
       - week2-mongodb-data:/data/db
     networks:
@@ -35,6 +33,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3106
     container_name: week2-frontend
     restart: unless-stopped
     depends_on:

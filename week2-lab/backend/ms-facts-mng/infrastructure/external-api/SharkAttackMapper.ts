@@ -1,9 +1,9 @@
 import type {
-    SharkAttackProps,
+  SharkAttackProps,
 } from '../../domain/entities/SharkAttack';
 
 import type {
-    OpenDataSoftRecord,
+  OpenDataSoftRecord,
 } from './OpenDataSoftClient';
 
 function toNumber(
@@ -56,15 +56,15 @@ export function mapSharkAttack(
 
     fecha: toStringOrNull(record.date),
 
-    año: toNumber(record.year),
+    a\u00f1o: toNumber(record.year),
 
     tipo: toStringOrNull(record.type),
 
-    país: toStringOrNull(record.country),
+    pa\u00eds: toStringOrNull(record.country),
 
-    área: toStringOrNull(record.area),
+    \u00e1rea: toStringOrNull(record.area),
 
-    ubicación: toStringOrNull(
+    ubicaci\u00f3n: toStringOrNull(
       record.location,
     ),
 
@@ -78,7 +78,7 @@ export function mapSharkAttack(
 
     edad: toNumber(record.age),
 
-    lesión: toStringOrNull(
+    lesi\u00f3n: toStringOrNull(
       record.injury,
     ),
 
@@ -105,11 +105,11 @@ export function mapSharkAttack(
 
     enlace: toStringOrNull(record.href),
 
-    número_de_caso: toStringOrNull(
+    n\u00famero_de_caso: toStringOrNull(
       record.case_number,
     ),
 
-    número_de_caso_0: toStringOrNull(
+    n\u00famero_de_caso_0: toStringOrNull(
       record.case_number0,
     ),
   };

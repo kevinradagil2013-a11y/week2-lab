@@ -1,11 +1,11 @@
 import {
-    Collection,
-    Filter,
-    MongoClient,
+  Collection,
+  Filter,
+  MongoClient,
 } from 'mongodb';
 
 import type {
-    SharkAttackProps,
+  SharkAttackProps,
 } from '../../domain/entities/SharkAttack';
 
 export type CountryAttackStat = {
@@ -16,6 +16,11 @@ export type CountryAttackStat = {
 export type YearAttackStat = {
   year: number;
   count: number;
+};
+
+type ProcessedEvent = {
+  eventId: string;
+  processedAt: string;
 };
 
 export class MongoSharkAttackRepository {
@@ -75,9 +80,6 @@ export class MongoSharkAttackRepository {
     );
   }
 
-  /**
-   * Connect to MongoDB.
-   */
   async connect(): Promise<void> {
     if (this.database) {
       return;
@@ -93,33 +95,31 @@ export class MongoSharkAttackRepository {
     await Promise.all([
       this.database
         .collection(this.collectionName)
-        .createIndex({ país: 1 }),
+        .createIndex({ ['pa\u00eds']: 1 }),
+
       this.database
         .collection(this.collectionName)
-        .createIndex({ año: 1 }),
+        .createIndex({ ['a\u00f1o']: 1 }),
+
       this.database
-        .collection(this.processedEventsCollectionName)
-        .createIndex({ eventId: 1 }, { unique: true }),
+        .collection<ProcessedEvent>(
+          this.processedEventsCollectionName,
+        )
+        .createIndex(
+          { eventId: 1 },
+          { unique: true },
+        ),
     ]);
   }
 
-  /**
-   * Disconnect from MongoDB.
-   */
   async disconnect(): Promise<void> {
     await this.client.close();
-
     this.database = null;
   }
 
-  /**
-   * Find one shark attack by ID.
-   */
   async findById(
     id: number,
-  ): Promise<
-    SharkAttackProps | null
-  > {
+  ): Promise<SharkAttackProps | null> {
     const collection =
       await this.getCollection();
 
@@ -132,14 +132,9 @@ export class MongoSharkAttackRepository {
       return null;
     }
 
-    return this.toDomain(
-      document,
-    );
+    return this.toDomain(document);
   }
 
-  /**
-   * Find all shark attacks.
-   */
   async findAll(): Promise<
     SharkAttackProps[]
   > {
@@ -149,35 +144,19 @@ export class MongoSharkAttackRepository {
     const documents =
       await collection
         .find({})
-        .sort({
-          _id: 1,
-        })
+        .sort({ _id: 1 })
         .toArray();
 
     return documents.map(
-      (
-        document,
-      ) =>
-        this.toDomain(
-          document,
-        ),
+      (document) =>
+        this.toDomain(document),
     );
   }
 
-  /**
-   * Find shark attacks by country.
-   *
-   * Returns a maximum of the requested
-   * number of records.
-   *
-   * Country comparison is case-insensitive.
-   */
   async findByCountry(
     country: string,
     limit = 5,
-  ): Promise<
-    SharkAttackProps[]
-  > {
+  ): Promise<SharkAttackProps[]> {
     const collection =
       await this.getCollection();
 
@@ -186,28 +165,22 @@ export class MongoSharkAttackRepository {
         .trim()
         .toUpperCase();
 
-    if (
-      !normalizedCountry
-    ) {
+    if (!normalizedCountry) {
       return [];
     }
 
     const safeLimit =
       Math.min(
-        Math.max(
-          limit,
-          1,
-        ),
+        Math.max(limit, 1),
         100,
       );
 
-    const filter:
-      Filter<
-        SharkAttackProps & {
-          _id: number;
-        }
-      > = {
-      país: {
+    const filter: Filter<
+      SharkAttackProps & {
+        _id: number;
+      }
+    > = {
+      ['pa\u00eds']: {
         $regex:
           `^${this.escapeRegex(
             normalizedCountry,
@@ -219,48 +192,29 @@ export class MongoSharkAttackRepository {
     const documents =
       await collection
         .find(filter)
-        .sort({
-          _id: 1,
-        })
-        .limit(
-          safeLimit,
-        )
+        .sort({ _id: 1 })
+        .limit(safeLimit)
         .toArray();
 
     return documents.map(
-      (
-        document,
-      ) =>
-        this.toDomain(
-          document,
-        ),
+      (document) =>
+        this.toDomain(document),
     );
   }
 
-  /**
-   * Save shark attack.
-   *
-   * Domain id is stored as MongoDB _id.
-   */
   async save(
     sharkAttack: SharkAttackProps,
-  ): Promise<
-    SharkAttackProps
-  > {
+  ): Promise<SharkAttackProps> {
     const collection =
       await this.getCollection();
 
     const document = {
       ...sharkAttack,
-      _id:
-        sharkAttack.id,
+      _id: sharkAttack.id,
     };
 
     await collection.replaceOne(
-      {
-        _id:
-          sharkAttack.id,
-      },
+      { _id: sharkAttack.id },
       document,
       {
         upsert: true,
@@ -270,7 +224,7 @@ export class MongoSharkAttackRepository {
     return sharkAttack;
   }
 
-  async hasProcessedEvent(
+  async tryClaimEvent(
     eventId: string,
   ): Promise<boolean> {
     if (!this.database) {
@@ -278,20 +232,33 @@ export class MongoSharkAttackRepository {
     }
 
     if (!this.database) {
-      throw new Error('MongoDB database is not connected.');
+      throw new Error(
+        'MongoDB database is not connected.',
+      );
     }
 
-    const processedEvent =
+    try {
       await this.database
-        .collection<{ eventId: string }>(
+        .collection<ProcessedEvent>(
           this.processedEventsCollectionName,
         )
-        .findOne({ eventId });
+        .insertOne({
+          eventId,
+          processedAt:
+            new Date().toISOString(),
+        });
 
-    return processedEvent !== null;
+      return true;
+    } catch (error) {
+      if (isDuplicateKeyError(error)) {
+        return false;
+      }
+
+      throw error;
+    }
   }
 
-  async markEventProcessed(
+  async releaseEventClaim(
     eventId: string,
   ): Promise<void> {
     if (!this.database) {
@@ -299,85 +266,118 @@ export class MongoSharkAttackRepository {
     }
 
     if (!this.database) {
-      throw new Error('MongoDB database is not connected.');
+      throw new Error(
+        'MongoDB database is not connected.',
+      );
     }
 
     await this.database
-      .collection<{ eventId: string; processedAt: string }>(
+      .collection<ProcessedEvent>(
         this.processedEventsCollectionName,
       )
-      .insertOne({
+      .deleteOne({
         eventId,
-        processedAt: new Date().toISOString(),
       });
   }
 
   async countAll(): Promise<number> {
-    const collection = await this.getCollection();
-    return collection.countDocuments();
+    const collection =
+      await this.getCollection();
+
+    const result =
+      await collection
+        .aggregate<{ total: number }>([
+          {
+            $count: 'total',
+          },
+        ])
+        .toArray();
+
+    return result[0]?.total ?? 0;
   }
 
-  async countByCountry(): Promise<CountryAttackStat[]> {
-    const collection = await this.getCollection();
+  async countByCountry(): Promise<
+    CountryAttackStat[]
+  > {
+    const collection =
+      await this.getCollection();
 
-    return collection.aggregate<CountryAttackStat>([
-      {
-        $match: {
-          país: { $nin: [null, ''] },
+    return collection
+      .aggregate<CountryAttackStat>([
+        {
+          $match: {
+            ['pa\u00eds']: {
+              $nin: [null, ''],
+            },
+          },
         },
-      },
-      {
-        $group: {
-          _id: '$país',
-          count: { $sum: 1 },
+        {
+          $group: {
+            _id: '$pa\u00eds',
+            count: {
+              $sum: 1,
+            },
+          },
         },
-      },
-      {
-        $sort: {
-          count: -1,
-          _id: 1,
+        {
+          $sort: {
+            count: -1,
+            _id: 1,
+          },
         },
-      },
-      { $limit: 5 },
-      {
-        $project: {
-          _id: 0,
-          country: '$_id',
-          count: 1,
+        {
+          $limit: 5,
         },
-      },
-    ]).toArray();
+        {
+          $project: {
+            _id: 0,
+            country: '$_id',
+            count: 1,
+          },
+        },
+      ])
+      .toArray();
   }
 
-  async countByYear(): Promise<YearAttackStat[]> {
-    const collection = await this.getCollection();
+  async countByYear(): Promise<
+    YearAttackStat[]
+  > {
+    const collection =
+      await this.getCollection();
 
-    return collection.aggregate<YearAttackStat>([
-      {
-        $match: {
-          año: { $ne: null },
+    return collection
+      .aggregate<YearAttackStat>([
+        {
+          $match: {
+            ['a\u00f1o']: {
+              $ne: null,
+            },
+          },
         },
-      },
-      {
-        $group: {
-          _id: '$año',
-          count: { $sum: 1 },
+        {
+          $group: {
+            _id: '$a\u00f1o',
+            count: {
+              $sum: 1,
+            },
+          },
         },
-      },
-      { $sort: { _id: 1 } },
-      {
-        $project: {
-          _id: 0,
-          year: '$_id',
-          count: 1,
+        {
+          $sort: {
+            _id: 1,
+          },
         },
-      },
-    ]).toArray();
+        {
+          $project: {
+            _id: 0,
+            year: '$_id',
+            count: 1,
+          },
+        },
+      ])
+      .toArray();
   }
 
-  /**
-   * Delete shark attack by ID.
-   */
   async deleteById(
     id: number,
   ): Promise<void> {
@@ -389,10 +389,6 @@ export class MongoSharkAttackRepository {
     });
   }
 
-  /**
-   * Convert MongoDB document
-   * back into domain data.
-   */
   private toDomain(
     document:
       SharkAttackProps & {
@@ -410,10 +406,6 @@ export class MongoSharkAttackRepository {
     };
   }
 
-  /**
-   * Escape special regular-expression
-   * characters.
-   */
   private escapeRegex(
     value: string,
   ): string {
@@ -422,4 +414,15 @@ export class MongoSharkAttackRepository {
       '\\$&',
     );
   }
+}
+
+function isDuplicateKeyError(
+  error: unknown,
+): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 11000
+  );
 }

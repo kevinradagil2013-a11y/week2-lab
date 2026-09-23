@@ -13,35 +13,44 @@ export class SharkAttackReportedConsumer {
   async process(
     event: SharkAttackReportedEvent,
   ): Promise<boolean> {
-    if (!event.eventId || event.aggregateId !== event.payload.id) {
-      throw new Error('Invalid SharkAttackReported event.');
+    if (
+      !event.eventId ||
+      event.aggregateId !== event.payload.id
+    ) {
+      throw new Error(
+        'Invalid SharkAttackReported event.',
+      );
     }
 
-    if (await this.repository.hasProcessedEvent(event.eventId)) {
+    const claimed =
+      await this.repository.tryClaimEvent(
+        event.eventId,
+      );
+
+    if (!claimed) {
       return false;
     }
 
-    await Promise.all([
-      this.repository.save(event.payload),
-      this.eventStore.append(event),
-      this.publisher.publish(event),
-    ]);
-
     try {
-      await this.repository.markEventProcessed(event.eventId);
+      await Promise.all([
+        this.repository.save(
+          event.payload,
+        ),
+        this.eventStore.append(
+          event,
+        ),
+        this.publisher.publish(
+          event,
+        ),
+      ]);
+
+      return true;
     } catch (error) {
-      if (!isDuplicateKeyError(error)) {
-        throw error;
-      }
+      await this.repository.releaseEventClaim(
+        event.eventId,
+      );
+
+      throw error;
     }
-
-    return true;
   }
-}
-
-function isDuplicateKeyError(error: unknown): boolean {
-  return typeof error === 'object'
-    && error !== null
-    && 'code' in error
-    && error.code === 11000;
 }
