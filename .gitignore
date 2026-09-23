@@ -1,3 +1,52 @@
-# Build folder and log file
+# Dependencies
+node_modules/
+
+# Build / generated files
+dist/
 build/
-build.log
+web-build/
+
+# Expo
+.expo/
+.expo-shared/
+expo-env.d.ts
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+!.env.example
+*.local
+
+# Logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Native / credentials
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# macOS
+.DS_Store
+
+# Generated native folders
+/ios
+/android
+
+# Local editor / tooling
+.vscode/
+.claude/
+
+# Local project backups / archives
+*.zip
+.gitignore.portal-backup
