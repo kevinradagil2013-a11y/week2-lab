@@ -1,0 +1,1 @@
+export type GetSharkAttacksQuery = Record<never, never>;

@@ -1,0 +1,52 @@
+services:
+  mongodb:
+    image: mongo:8.0
+    container_name: week2-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - week2-mongodb-data:/data/db
+    networks:
+      - week2-network
+
+  backend:
+    build:
+      context: ./backend/ms-facts-mng
+      dockerfile: Dockerfile
+    container_name: week2-ms-facts-mng
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      NODE_ENV: production
+      PORT: 3106
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_DATABASE: week2_lab
+      GCP_PROJECT_ID: nebulae-lab
+      PUBSUB_TOPIC: neb-university-kevin-rada-gil
+      PUBSUB_ENABLED: "false"
+    ports:
+      - "3106:3106"
+    networks:
+      - week2-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: week2-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    networks:
+      - week2-network
+
+volumes:
+  week2-mongodb-data:
+
+networks:
+  week2-network:
+    driver: bridge

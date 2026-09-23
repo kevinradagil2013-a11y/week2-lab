@@ -1,0 +1,28 @@
+{
+  "name": "ms-facts-mng",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Week 2 DDD laboratory microservice for shark attack management",
+  "main": "dist/api/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/api/server.js",
+    "dev": "tsx api/server.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@google-cloud/pubsub": "^6.1.0",
+    "@types/cors": "^2.8.19",
+    "cors": "^2.8.6",
+    "express": "^5.1.0",
+    "graphql": "^17.0.2",
+    "mongodb": "^7.6.0",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.5.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
