@@ -1,4 +1,4 @@
-import cors from 'cors';
+﻿import cors from 'cors';
 import express from 'express';
 import { graphql } from 'graphql';
 import { delay, from } from 'rxjs';
@@ -23,16 +23,19 @@ import {
 import {
   GetSharkAttacksByCountryHandler,
 } from '../application/queries/GetSharkAttacksByCountryHandler';
+
 import { GetSharkAttackStatisticsHandler } from '../application/queries/GetSharkAttackStatisticsHandler';
 
 import { OpenDataSoftClient } from '../infrastructure/external-api/OpenDataSoftClient';
 import { SharkAttackFallbackProvider } from '../infrastructure/external-api/SharkAttackFallbackProvider';
 
 import { MongoEventStore } from '../infrastructure/event-store/MongoEventStore';
+
 import {
   createGraphQLSchema,
   getGraphQLRootValue,
 } from '../infrastructure/graphql/schema';
+
 import { MongoDatabase } from '../infrastructure/mongodb/MongoDatabase';
 import { MongoSharkAttackRepository } from '../infrastructure/mongodb/MongoSharkAttackRepository';
 import { GooglePubSubPublisher } from '../infrastructure/pubsub/GooglePubSubPublisher';
@@ -41,12 +44,39 @@ const app = express();
 
 const PORT = Number(process.env.PORT ?? 3106);
 
+const frontendUrl =
+  process.env.FRONTEND_URL?.trim().replace(/\/$/, '');
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  ...(frontendUrl ? [frontendUrl] : []),
+];
+
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-    ],
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      const normalizedOrigin =
+        origin.trim().replace(/\/$/, '');
+
+      if (
+        allowedOrigins.includes(normalizedOrigin)
+      ) {
+        callback(null, true);
+        return;
+      }
+
+      callback(
+        new Error(
+          `Origin not allowed by CORS: ${origin}`,
+        ),
+      );
+    },
   }),
 );
 
@@ -67,9 +97,10 @@ app.post('/graphql', async (req, res) => {
     res.status(400).json({
       errors: [
         {
-          message: error instanceof Error
-            ? error.message
-            : 'Unable to execute GraphQL query',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Unable to execute GraphQL query',
         },
       ],
     });
@@ -83,7 +114,8 @@ const sharkAttackRepository =
 
 const eventStore = new MongoEventStore();
 
-const openDataSoftClient = new OpenDataSoftClient();
+const openDataSoftClient =
+  new OpenDataSoftClient();
 
 const fallbackProvider =
   new SharkAttackFallbackProvider();
@@ -230,9 +262,6 @@ app.get(
           country,
         });
 
-      /*
-       * RxJS
-       */
       from(Promise.resolve(result.records))
         .pipe(delay(1000))
         .subscribe({
@@ -461,11 +490,15 @@ app.get(
   },
 );
 
-const server = app.listen(PORT, () => {
-  console.log(
-    `ms-facts-mng running on http://localhost:${PORT}`,
-  );
-});
+const server = app.listen(
+  PORT,
+  '0.0.0.0',
+  () => {
+    console.log(
+      `ms-facts-mng running on http://0.0.0.0:${PORT}`,
+    );
+  },
+);
 
 async function shutdown() {
   console.log(
