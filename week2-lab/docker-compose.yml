@@ -21,9 +21,12 @@ services:
       PORT: 3106
       MONGODB_URI: mongodb://mongodb:27017
       MONGODB_DATABASE: week2_lab
-      GCP_PROJECT_ID: nebulae-lab
-      PUBSUB_TOPIC: neb-university-kevin-rada-gil
-      PUBSUB_ENABLED: "false"
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-nebulae-week2}
+      PUBSUB_TOPIC: ${PUBSUB_TOPIC:-neb-university-kevin-rada-gil}
+      PUBSUB_ENABLED: ${PUBSUB_ENABLED:-false}
+      GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/week2-pubsub-key.json
+    volumes:
+      - ${GCP_CREDENTIALS_FILE}:/root/.config/gcloud/week2-pubsub-key.json:ro
     ports:
       - "3106:3106"
     networks:
