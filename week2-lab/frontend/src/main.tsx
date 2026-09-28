@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { CssBaseline } from '@mui/material';
@@ -6,6 +6,9 @@ import { ApolloProvider } from '@apollo/client/react';
 
 import App from './App';
 import { apolloClient } from './graphql/client';
+
+import './index.css';
+import './App.css';
 
 ReactDOM.createRoot(
   document.getElementById('root')!,

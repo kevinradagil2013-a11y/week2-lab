@@ -1,0 +1,24 @@
+﻿# Local environment and secrets
+.env
+.env.*
+!.env.example
+.gcp/
+credentials/
+secrets/
+*.key
+*.pem
+
+# Dependencies and build output
+node_modules/
+dist/
+
+# Local backups / temporary files
+**/src-backup-*/
+**/*.before-*
+**/inspect-glb.mjs
+**/ocean-preview/
+
+# Local editor/system files
+.vscode/
+.DS_Store
+Thumbs.db

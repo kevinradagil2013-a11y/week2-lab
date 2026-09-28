@@ -1,12 +1,12 @@
-import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Divider,
-    Grid,
-    Stack,
-    Typography,
+﻿import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Divider,
+  Grid,
+  Stack,
+  Typography,
 } from '@mui/material';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -14,11 +14,11 @@ import DeleteOutlineIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
 import {
-    CountryCases,
+  CountryCases,
 } from '../components/CountryCases';
 
 import type {
-    SharkAttack,
+  SharkAttack,
 } from '../types/sharkAttack';
 
 type SharkAttackDetailProps = {
@@ -38,13 +38,23 @@ function DetailField({
   value,
 }: DetailFieldProps) {
   return (
-    <Box>
+    <Box
+      sx={{
+        p: 2,
+        borderRadius: 2,
+        backgroundColor: 'rgba(255, 255, 255, 0.035)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+      }}
+    >
       <Typography
         variant="caption"
-        color="text.secondary"
         sx={{
           display: 'block',
           mb: 0.5,
+          color: '#9FB5BE',
+          fontWeight: 700,
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
         }}
       >
         {label}
@@ -53,6 +63,7 @@ function DetailField({
       <Typography
         variant="body1"
         sx={{
+          color: '#FFFFFF',
           fontWeight: 600,
           wordBreak: 'break-word',
         }}
@@ -73,7 +84,12 @@ export function SharkAttackDetail({
   onDelete,
 }: SharkAttackDetailProps) {
   return (
-    <Stack spacing={3}>
+    <Stack
+      spacing={3}
+      sx={{
+        color: '#FFFFFF',
+      }}
+    >
       <Box>
         <Button
           variant="text"
@@ -81,13 +97,39 @@ export function SharkAttackDetail({
             <ArrowBackIcon />
           }
           onClick={onBack}
+          sx={{
+            color: '#FFFFFF',
+            fontWeight: 700,
+            '&:hover': {
+              backgroundColor:
+                'rgba(255, 255, 255, 0.08)',
+            },
+          }}
         >
           VOLVER A REGISTROS
         </Button>
       </Box>
 
-      <Card elevation={0}>
-        <CardContent>
+      <Card
+        elevation={0}
+        sx={{
+          backgroundColor: '#020609',
+          color: '#FFFFFF',
+          borderRadius: 3,
+          border:
+            '1px solid rgba(117, 231, 238, 0.16)',
+          boxShadow:
+            '0 12px 40px rgba(0, 0, 0, 0.35)',
+        }}
+      >
+        <CardContent
+          sx={{
+            p: {
+              xs: 2,
+              md: 3,
+            },
+          }}
+        >
           <Stack spacing={3}>
             <Stack
               direction={{
@@ -110,6 +152,7 @@ export function SharkAttackDetail({
                 <Typography
                   variant="h4"
                   sx={{
+                    color: '#FFFFFF',
                     fontWeight: 800,
                   }}
                 >
@@ -118,7 +161,9 @@ export function SharkAttackDetail({
 
                 <Typography
                   variant="body2"
-                  color="text.secondary"
+                  sx={{
+                    color: '#9FB5BE',
+                  }}
                 >
                   Registro #{sharkAttack.id}
                 </Typography>
@@ -134,6 +179,16 @@ export function SharkAttackDetail({
                     <EditIcon />
                   }
                   onClick={onEdit}
+                  sx={{
+                    color: '#FFFFFF',
+                    borderColor:
+                      'rgba(255, 255, 255, 0.35)',
+                    '&:hover': {
+                      borderColor: '#FFFFFF',
+                      backgroundColor:
+                        'rgba(255, 255, 255, 0.08)',
+                    },
+                  }}
                 >
                   EDITAR
                 </Button>
@@ -145,17 +200,28 @@ export function SharkAttackDetail({
                     <DeleteOutlineIcon />
                   }
                   onClick={onDelete}
+                  sx={{
+                    '&:hover': {
+                      backgroundColor:
+                        'rgba(244, 67, 54, 0.12)',
+                    },
+                  }}
                 >
                   ELIMINAR
                 </Button>
               </Stack>
             </Stack>
 
-            <Divider />
+            <Divider
+              sx={{
+                borderColor:
+                  'rgba(255, 255, 255, 0.12)',
+              }}
+            />
 
             <Grid
               container
-              spacing={3}
+              spacing={2}
             >
               <Grid
                 size={{

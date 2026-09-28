@@ -1,12 +1,15 @@
 import type { ReactNode } from 'react';
 
 import {
-  AppBar,
   Box,
   Container,
-  Toolbar,
   Typography,
 } from '@mui/material';
+
+import WaterIcon from '@mui/icons-material/Water';
+import RadarIcon from '@mui/icons-material/Radar';
+
+import { SharkTestScene } from '../shark/SharkTestScene';
 
 type LayoutProps = {
   children: ReactNode;
@@ -16,56 +19,67 @@ export function Layout({
   children,
 }: LayoutProps) {
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        backgroundColor: '#f4f6f8',
-      }}
-    >
-      <AppBar
-        position="static"
-        elevation={0}
-      >
-        <Toolbar>
-          <Box sx={{ flexGrow: 1 }}>
+    <Box className="ocean-shell">
+
+      {/* Ocean Live: permanent application background */}
+      <div className="ocean-global-layer">
+        <SharkTestScene />
+      </div>
+
+      <div className="ocean-global-overlay" />
+
+      <header className="ocean-header">
+        <div className="ocean-brand">
+          <div className="ocean-brand-mark">
+            <WaterIcon />
+          </div>
+
+          <div>
             <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 700,
-              }}
+              component="div"
+              className="ocean-brand-name"
             >
-              Portal Conductor
+              NEBULAE
             </Typography>
 
             <Typography
-              variant="caption"
-              sx={{
-                opacity: 0.8,
-              }}
+              component="div"
+              className="ocean-brand-product"
             >
-              Nebulae · Laboratorio Técnico
+              OCEAN INTELLIGENCE
             </Typography>
-          </Box>
+          </div>
+        </div>
 
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 600,
-            }}
-          >
-            WEEK 2
-          </Typography>
-        </Toolbar>
-      </AppBar>
+        <div className="ocean-header-status">
+          <RadarIcon />
 
-      <Container
-        maxWidth="xl"
-        sx={{
-          py: 4,
-        }}
-      >
-        {children}
-      </Container>
+          <span>
+            LIVE DATA STREAM
+          </span>
+
+          <span className="ocean-status-dot" />
+        </div>
+      </header>
+
+      <main className="ocean-main">
+        <Container
+          maxWidth="xl"
+          className="ocean-container"
+        >
+          {children}
+        </Container>
+      </main>
+
+      <footer className="ocean-footer">
+        <span>
+          NEBULAE · SHARK INTELLIGENCE PLATFORM
+        </span>
+
+        <span>
+          DDD · RXJS · GRAPHQL · MONGODB
+        </span>
+      </footer>
     </Box>
   );
 }
